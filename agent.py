@@ -1,12 +1,22 @@
-import os
-from pathlib import Path
+"""最原始的版本：配置 → 客户端 → 调用
 
-from dotenv import load_dotenv
+    uv run --env-file .env agent.py
+"""
+import os
+
 from openai import OpenAI
 
-load_dotenv(Path(__file__).resolve().parent / ".env")
-client = OpenAI(api_key=os.environ["API_KEY"], base_url=os.environ["BASE_URL"])
+# 1. 配置
+BASE_URL = os.environ.get("BASE_URL", "http://127.0.0.1:8010/v1")
+API_KEY = os.environ.get("API_KEY", "cheolhwi")
+MODEL = os.environ.get("MODEL", "Qwen3.8-Flash-Next-GSQ-RCO-Q2_0")
 
-models = [m.id for m in client.models.list()]
-print("已接入:", os.environ["BASE_URL"], "| 模型数:", len(models))
-print("当前 MODEL:", os.environ["MODEL"])
+# 2. 客户端
+client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
+
+# 3. 调用
+resp = client.chat.completions.create(
+    model=MODEL,
+    messages=[{"role": "user", "content": "你好"}],
+)
+print(resp.choices[0].message.content)
